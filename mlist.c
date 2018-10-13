@@ -5,8 +5,9 @@
 #define HASHSIZE 20;
 #define CHAINSIZE 20;
 
-typedef struct mlistnode {
-	int size;
+typedef struct entry {
+	//Dynamic hash
+	//int initiated;
 	struct mlistnode *next;
 	MEntry *entry;
 } Entry;
@@ -40,6 +41,7 @@ MList *ml_create(void) {
 		return ml;
 	}
 
+	ml->size = size;
 	if ((ml->table = (Entry **)malloc(sizeof(Entry *) * size)) != NULL) {
 		for (i = 0; i < size; i++) {
 			ml->table[i] = (Entry *)malloc(sizeof(Entry));
@@ -47,15 +49,76 @@ MList *ml_create(void) {
 		}
 	}
 
-	/** Set hash pointer to bucket */
-	ml->size = size;
-
-	/** Set mlist size */
-	ml->size = size;
-
 	return ml;
 
 }
+
+//dynamic hash
+// void *reallocate(MList *ml){
+
+// 	// if(ml_verbose)
+// 	// 	fprintf(stderr,"mlist: resizing hash table\n");
+// 		printf("Resize \n");
+
+// 	/** loop counter */
+// 	int i,j;
+// 	int bucketcount;
+
+// 	/** create a new mailing list with x2 size */	
+// 	MList *new_ml;
+// 	size = (ml->size) * 2;
+// 	new_ml = ml_create();
+
+// 	/** cursor to loop through old data */
+// 	Entry *cursor;
+// 	Entry *new_cursor;
+// 	Entry *add_cursor;
+
+
+// 	/** rehash and link old data into new list */
+// 	unsigned long hashval;
+
+// 	for(i=0;i<ml->size;i++){
+// 		cursor = ml->table[i];
+// 		while(cursor->next!=NULL){
+// 			/** loop through every single bucket of every single hashtab entry */
+
+// 			/** stores location of next node to assign space to */
+// 			new_cursor = cursor->next;
+			
+// 			/** set next value of cursor to NULL to indicate last node */
+// 			cursor->next = NULL;
+
+// 			hashval = me_hash(cursor->entry,size);
+// 			add_cursor = new_ml->table[hashval];
+
+// 			/** loop through new mlist buckets to find where to put new entry */
+// 			bucketcount=0;
+// 			while(add_cursor->next!=NULL){
+// 				add_cursor = add_cursor->next;
+// 			}
+			
+// 			if( (new_ml->table[hashval]->initiated == 0) ){
+// 				new_ml->table[hashval] = cursor;
+// 				new_ml->table[hashval]->initiated = 1;
+// 			} 
+		
+// 			else if( (new_ml->table[hashval]->initiated == 1) ){
+// 				new_ml->table[hashval]->next = cursor;
+// 				new_ml->table[hashval]->initiated = 2;
+// 			} else
+// 				add_cursor->next = cursor;
+
+// 			/** update cursor to the next node */
+// 			cursor = new_cursor;
+// 		}
+		
+// 	}
+// 	free(ml->table);
+// 	free(ml);
+
+// 	return new_ml;
+// }
 
 /** adds MEntry to list,
 Returns 1 if successful
@@ -66,6 +129,7 @@ int ml_add(MList **ml, MEntry *me) {
 	unsigned long hashval;
 	int i;
 	Entry *current, *nextEntry;
+	int counterSize = 0;
 
 	
 
@@ -92,22 +156,18 @@ int ml_add(MList **ml, MEntry *me) {
 	/** loop until free bucket */
 	while (current->next != NULL) {
 		current = current->next;
+		counterSize++;
 	}
 	current->next = nextEntry;
 	current->entry = me;
-	//Dynamic hash table
-	//if (current->size <= HASHSIZE) {
-	//	/** set next to an empty bucket, and the entry to mentry */
-	//	current->next = nextEntry;
-	//	current->entry = me;
-	//	lSize++;
-	//	current->size = lSize;
-	//	
-	//}
-	//else {
-	//	current->size = 2 * CHAINSIZE;
-	//}
-	//return 1;
+
+//dynamnic hash
+	// if(counterSize > m->size){
+	// 	*ml = reallocate(m);
+	// }
+	return 1;
+	
+	
 }
 
 /** looks for entry in ml matching me
