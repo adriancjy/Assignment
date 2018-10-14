@@ -1,3 +1,10 @@
+/*
+AP3 - Assignment 1a
+Tan De Hui Adrian
+This is my own work as defined in the Academic Ethics agreement 
+I have signed.
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,7 +14,7 @@
 #define SURNAMECT 100
 #define POSTALCT 20
 #define MAXLINE 500
-#define BASE 50
+
 
 
 MEntry *me;
