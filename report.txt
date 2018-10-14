@@ -1,0 +1,15 @@
+Report on the AP3 Assignment
+
+Mentry and Mlist are both done and working compiled in Windows, yet to try in VM.
+Done dynamic hash table with the help of the use of stackoverflow and google, every man's best friend.
+
+Initially was difficult due to no prior knowledge in C, had to slowly work and learn while doing.
+
+Right now the only thing that is not implemented yet is when the name in the entry contains messages, the error 
+control is not yet done for that, i commented some codes under ml_lookup and ml_add that checks for me and its
+respective variables however i am not sure if it works yet.
+
+Surname validation is done by checking whether there is a , or there is not, the checking whether there is spaces if
+there is no comma.
+
+hash table is recreated with size * 2 and rehashed and added to new table.
