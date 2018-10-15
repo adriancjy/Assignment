@@ -12,7 +12,7 @@ I have signed.
 #define CHAINSIZE 20;
 
 typedef struct entry {
-	int initiated;
+	int LLCount;
 	struct entry *next;
 	MEntry *entry;
 } Entry;
@@ -125,7 +125,7 @@ MEntry *ml_lookup(MList *ml, MEntry *me) {
 
 	int tempSize = ml->size;
 
-	/** print statement if verbose */
+	
 	if (ml_verbose)
 		fprintf(stderr, "mlist: look for existence of entry\n");
 		
@@ -139,15 +139,15 @@ MEntry *ml_lookup(MList *ml, MEntry *me) {
 
 	while (entryP->next != NULL) {
 		if (me_compare(entryP->entry, me) == 0) {
-			/**found match, return pointer */
+			//Entry found, return entry.
 			return entryP->entry;
 		}
 		else {
-			/** not found, continue searching*/
+			//Continue searching
 			entryP = entryP->next;
 		}
 	}
-	/** entry was not found, return NULL */
+	//Entry not found
 	ml->size = tempSize;
 	return NULL;
 }
@@ -155,8 +155,9 @@ MEntry *ml_lookup(MList *ml, MEntry *me) {
 
 void ml_destroy(MList *ml) {
 	int i;
-	Entry *currNode; /** pointer to node to delete */
-	Entry *nextNode;	/** pointer to the next node to delete */
+	//currNode is the current one to delete, nextNode is pointing to the next one to delete
+	Entry *currNode; 
+	Entry *nextNode;	
 
 	if (ml_verbose)
 		fprintf(stderr, "mlist: destroying list\n");
@@ -172,7 +173,7 @@ void ml_destroy(MList *ml) {
 		}
 		free(currNode);
 	}
-	/** free structures */
+	
 	free(ml->table);
 	free(ml);
 }
@@ -183,7 +184,7 @@ void *reCreate(MList *ml){
 	 	fprintf(stderr,"mlist: resizing hash table\n");
 		printf("Resize \n");
 
-	/** create a new mailing list with x2 size */	
+	// create a new mailing list with x2 size 
 	MList *new_ml;
 	size = (ml->size) * 2;
 	new_ml = ml_create();
@@ -191,10 +192,11 @@ void *reCreate(MList *ml){
 	
 }
 
+//Move all the current entries to the new hash table
 void *transfer(MList *ml, MList *new_ml){
  
  	int i,j;
-	int bucketcount;
+	int bCount;
 	unsigned long hashVal;
 	
 	Entry *current;
@@ -216,24 +218,29 @@ void *transfer(MList *ml, MList *new_ml){
 			//use new hash value index and store in updated list
 			addC = new_ml->table[hashVal];
 
-			/** loop through new mlist buckets to find where to put new entry */
-			bucketcount=0;
+			/*Loop through new entry to store the newly hashed entries.
+			LLCount is to determine whether the new hashVal has entries or not,
+			initially 0 means it has no entries and add the count to 1.
+			2 means that it already has an entry and the rest of the entry that has same hash val will be added to the next position
+			in the list.
+			*/
+			bCount=0;
 			while(addC->next!=NULL){
 				addC = addC->next;
 			}
 			
-			if( (new_ml->table[hashVal]->initiated == 0) ){
+			if( (new_ml->table[hashVal]->LLCount == 0) ){
 				new_ml->table[hashVal] = current;
-				new_ml->table[hashVal]->initiated = 1;
+				new_ml->table[hashVal]->LLCount = 1;
 			} 
 		
-			else if( (new_ml->table[hashVal]->initiated == 1) ){
+			else if( (new_ml->table[hashVal]->LLCount == 1) ){
 				new_ml->table[hashVal]->next = current;
-				new_ml->table[hashVal]->initiated = 2;
+				new_ml->table[hashVal]->LLCount = 2;
 			} else
 				addC->next = current;
 
-			/** update cursor to the next node */
+			
 			current = newC;
 		}
 		
