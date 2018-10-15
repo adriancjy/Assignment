@@ -15,6 +15,9 @@ I have signed.
 #define POSTALCT 20
 #define MAXLINE 500
 
+int checkForNum(char *copyLine);
+char *spaceEntry(char *copyLine);
+char *commaEntry(char *copyLine);
 
 
 MEntry *me;
@@ -27,7 +30,7 @@ MEntry *me_get(FILE *fd) {
 	const char needle = ',';
 	char *surnameAdd;
 	
-int checkForNum(char *copyLine);
+
 	
 
 	/** loop counter */
@@ -54,25 +57,11 @@ int checkForNum(char *copyLine);
 		//No number
 		if (checkNum == 0) {
 			if (strchr(entryLine, ',') != NULL) {
-				for ( z = 0; entryLine[z] != ','; z++) {
-					me->surname[y++] = entryLine[z];
-				}
-				me->surname[y] = '\0';
+				
+				me->surname = commaEntry(entryLine);
 			}
 			else {
-				int count = 0;
-				int y = 0;
-				for ( z = 0; entryLine[z]; z++) {
-					if (entryLine[z] == ' ' && count < 2) {
-						count += 1;
-					}
-					else if(entryLine[z] != ' ' && count == 2){
-						me->surname[y++] = entryLine[z];
-						
-
-					}
-				}
-				me->surname[y-1] = '\0';
+				me->surname = spaceEntry(entryLine);
 				
 				
 			}
@@ -157,18 +146,33 @@ void me_destroy(MEntry *me) {
 		free(me);
 	}
 }
+//Get surname with comma
+char *commaEntry(char *copyLine) {
+	int y=0, z=0;
+		for ( z = 0; copyLine[z] != ','; z++) {
+					me->surname[y++] = copyLine[z];
+				}
+				me->surname[y] = '\0';
 
-int checkForNeedle(char *copyLine) {
-	int length = strlen(copyLine);
-	int retVal = 0;
-	for (int i = 0; i < length-1; i++) {
-		if (copyLine[i] == ',') {
-			retVal += 1;
-		}
+				return me->surname;
+}
+//Get surname with space
+char *spaceEntry(char *copyLine){
+	int count = 0;
+				int y = 0,  z=0;
+				for ( z = 0; copyLine[z]; z++) {
+					if (copyLine[z] == ' ' && count < 2) {
+						count += 1;
+					}
+					else if(copyLine[z] != ' ' && count == 2){
+						me->surname[y++] = copyLine[z];
+						
 
-		
-	}
-	return retVal;
+					}
+				}
+				me->surname[y-1] = '\0';
+
+				return me->surname;
 }
 
 //check surname for number, if exist, return 1, else 0
