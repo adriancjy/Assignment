@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 	char *p;
 	int c;
 	int varg = 0;
-	FILE *fd;
+	
 
 	if (argc > 2) {
 		usage(); return -1;
@@ -33,9 +33,9 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	ml_verbose = varg;
-	fd = fopen("M.txt", "r");
+	
 	ml = ml_create();
-	while ((mep = me_get(fd)) != NULL) {
+	while ((mep = me_get(stdin)) != NULL) {
 		meq = ml_lookup(ml, mep);
 		if (meq == NULL)
 			(void)ml_add(&ml, mep);
