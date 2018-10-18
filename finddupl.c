@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
 			printf("==========\n");
 			me_print(meq, stdout);
 			printf("\n");
+			
 			me_destroy(mep);
 		}
 	}

@@ -38,8 +38,7 @@ MList *ml_create(void) {
 	/** loop variable */
 	int i;
 
-	/** temp hashtable initialisation variable */
-	Entry *entry;
+	
 
 	if (ml_verbose)
 		fprintf(stderr, "create list\n");
@@ -85,7 +84,7 @@ int ml_add(MList **ml, MEntry *me) {
 
 	//Allocate space
 	if ((nextEntry = (Entry *)calloc(1, sizeof(Entry))) == NULL) {
-
+		
 		return 0;
 	}
 	nextEntry->next = NULL;
@@ -172,10 +171,13 @@ void ml_destroy(MList *ml) {
 			currNode = nextNode;
 		}
 		free(currNode);
+		currNode = NULL;
 	}
 	
 	free(ml->table);
+	ml->table = NULL;
 	free(ml);
+	ml = NULL;
 }
 
 //create new table with X2 of size
@@ -195,7 +197,7 @@ void *reCreate(MList *ml){
 //Move all the current entries to the new hash table
 void *transfer(MList *ml, MList *new_ml){
  
- 	int i,j;
+ 	int i;
 	int bCount;
 	unsigned long hashVal;
 	
@@ -246,7 +248,10 @@ void *transfer(MList *ml, MList *new_ml){
 		
 	}
 	free(ml->table);
+	ml->table = NULL;
 	free(ml);
+	ml = NULL;
+	
 
 	return new_ml;
 }

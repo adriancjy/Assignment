@@ -42,12 +42,12 @@ MEntry *me_get(FILE *fd) {
 
 		/** Nothing left in file to input, return null */
 		if (entryLine[0] == '\0') {
-			free(me);
+			me_destroy(me);
 			return NULL;
 		}
 
 		int checkNum = checkForNum(entryLine);
-		int y=0, z=0;
+	
 		//No number
 		if (checkNum == 0) {
 			if (strchr(entryLine, ',') != NULL) {
@@ -68,7 +68,7 @@ MEntry *me_get(FILE *fd) {
 
 		/** import house number to MEntry */
 		fgets(entryLine, MAXLINE, fd);
-		char *temp = "";
+	
 		me->house_number = atoi(entryLine);
 		strcat(me->full_address, entryLine);
 
@@ -131,15 +131,12 @@ unsigned long me_hash(MEntry *me, unsigned long size) {
 //Checks me if it is empty, if so, free upon destroy method being called.
 void me_destroy(MEntry *me) {
 	if (me != NULL) {
-		me->full_address = NULL;
 		free(me->full_address);
-		me->house_number = 0;
-		me->surname = NULL;
 		free(me->surname);
-		me->postcode = NULL;
 		free(me->postcode);
-		free(me);
 	}
+	free(me);
+	me = NULL;
 }
 //Get surname with comma
 char *commaEntry(char *copyLine) {
