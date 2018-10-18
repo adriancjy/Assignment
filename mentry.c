@@ -29,11 +29,11 @@ MEntry *me_get(FILE *fd) {
 	/** loop counter */
 	int i, j;
 
-	if ((me = (MEntry *)calloc(1, sizeof(MEntry))) != NULL) {
+	if ((me = (MEntry *)malloc(sizeof(MEntry))) != NULL) {
 		/** allocate memory on heap for entry */
-		me->surname = calloc(1,sizeof(char)*SURNAMECT);
-		me->postcode = calloc(1, sizeof(char)*POSTALCT);
-		me->full_address = calloc(1, sizeof(char) * MAXLINE * 3);
+		me->surname = malloc(sizeof(char)*SURNAMECT);
+		me->postcode = malloc(sizeof(char)*POSTALCT);
+		me->full_address = malloc(sizeof(char) * MAXLINE * 3);
 	}
 
 		/** import data into temp storage */

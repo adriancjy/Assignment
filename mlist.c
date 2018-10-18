@@ -43,14 +43,14 @@ MList *ml_create(void) {
 	if (ml_verbose)
 		fprintf(stderr, "create list\n");
 		
-	if ((ml = (MList *)calloc(1, sizeof(MList))) == NULL) {
+	if ((ml = (MList *)malloc(sizeof(MList))) == NULL) {
 		return ml;
 	}
 
 	ml->size = size;
-	if ((ml->table = (Entry **)calloc(1, sizeof(Entry *) * size)) != NULL) {
+	if ((ml->table = (Entry **)malloc(sizeof(Entry *) * size)) != NULL) {
 		for (i = 0; i < size; i++) {
-			ml->table[i] = (Entry *)calloc(1, sizeof(Entry));
+			ml->table[i] = (Entry *)malloc(sizeof(Entry));
 			ml->table[i]->next = NULL;
 		}
 	}
@@ -73,7 +73,6 @@ int ml_add(MList **ml, MEntry *me) {
 	
 	MList *m = *ml;
 	unsigned long hashval;
-	int i;
 	Entry *current, *nextEntry;
 	int counterSize = 0;
 
@@ -83,7 +82,7 @@ int ml_add(MList **ml, MEntry *me) {
 	}
 
 	//Allocate space
-	if ((nextEntry = (Entry *)calloc(1, sizeof(Entry))) == NULL) {
+	if ((nextEntry = (Entry *)malloc(sizeof(Entry))) == NULL) {
 		
 		return 0;
 	}
