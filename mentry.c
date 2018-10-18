@@ -25,22 +25,15 @@ MEntry *me;
 MEntry *me_get(FILE *fd) {
 
 	char entryLine[MAXLINE + 1] = { 0 };
-	//To check and validate surname
-	char *copyLine[MAXLINE];
-	const char needle = ',';
-	char *surnameAdd;
-	
-
-	
-
+	//To check and validate surname	
 	/** loop counter */
 	int i, j;
 
-	if ((me = (MEntry *)malloc(sizeof(MEntry))) != NULL) {
+	if ((me = (MEntry *)calloc(1, sizeof(MEntry))) != NULL) {
 		/** allocate memory on heap for entry */
-		me->surname = malloc(sizeof(char)*SURNAMECT);
-		me->postcode = malloc(sizeof(char)*POSTALCT);
-		me->full_address = malloc(sizeof(char)*MAXLINE * 3);
+		me->surname = calloc(1,sizeof(char)*SURNAMECT);
+		me->postcode = calloc(1, sizeof(char)*POSTALCT);
+		me->full_address = calloc(1, sizeof(char) * MAXLINE * 3);
 	}
 
 		/** import data into temp storage */
@@ -49,6 +42,7 @@ MEntry *me_get(FILE *fd) {
 
 		/** Nothing left in file to input, return null */
 		if (entryLine[0] == '\0') {
+			free(me);
 			return NULL;
 		}
 
@@ -89,6 +83,7 @@ MEntry *me_get(FILE *fd) {
 		me->postcode[j] = '\0';
 		strcat(me->full_address, entryLine);
 		return me;
+
 	}
 	
 
