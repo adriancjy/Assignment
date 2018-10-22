@@ -1,256 +1,183 @@
-/*
-AP3 - Assignment 1a
-Tan De Hui Adrian
-This is my own work as defined in the Academic Ethics agreement 
-I have signed.
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
+#include "mentry.h"
 #include "mlist.h"
+#define Element 20
+#define TSize 20
 
-#define CHAINSIZE 20;
+int ml_verbose=0;		
 
-typedef struct entry {
-	int LLCount;
-	struct entry *next;
-	MEntry *entry;
-} Entry;
-
-typedef struct mlist {
-	int size;
-	Entry **table;
-} MListT;
-
-int ml_verbose = 0;
-int size = CHAINSIZE;
+//create an array to hold 20 entries 
+typedef struct entry{
+    unsigned int size;
+    MEntry *entryArray[20];
+}Entry;
 
 
-//declare method
-void *reCreate(MList *ml);
-void *transfer(MList *ml, MList *new_ml);
+typedef struct mlist{
+    unsigned int size;
+    Entry **table;
+}MListT;
 
+//Declare to remove implicit warning
+Entry *ml_readd(MList *ml, MEntry *me);
 
-MList *ml_create(void) {
-	/** Declare mailing list */
-	MList *ml;
+ 	unsigned int oldCap = 0;
+    unsigned int newCap = 0;
 
-	/** loop variable */
-	int i;
+   // Variable for for loop to access entries in table
+    unsigned int i=0;
+    unsigned int j=0;
 
-	
+/* ml_create - created a new mailing list */
+MList *ml_create(void){
+   
+    MList *mlist = NULL;
+    unsigned int i=0;
 
-	if (ml_verbose)
-		fprintf(stderr, "create list\n");
-		
-	if ((ml = (MList *)malloc(sizeof(MList))) == NULL) {
-		return ml;
-	}
+    if (ml_verbose)
+        fprintf(stderr, "MList: creating mailing list.\n" );
 
-	ml->size = size;
-	if ((ml->table = (Entry **)malloc(sizeof(Entry *) * size)) != NULL) {
-		for (i = 0; i < size; i++) {
-			ml->table[i] = (Entry *)malloc(sizeof(Entry));
-			ml->table[i]->next = NULL;
-		}
-	}
+    //allocate memory for the hash table
+    if ((mlist = malloc(sizeof(MList))) == NULL)
+        return 0;
 
-	return ml;
+//set size to TSize, a constant
+    mlist->size = TSize;
 
-}
+    //allocate memory for mlist table
+    if ((mlist->table = malloc(sizeof(Entry) * mlist->size)) == NULL)
+        return 0;
 
-/** adds MEntry to list,
-Returns 1 if successful
-Returns 0 if not successful
-*/
-int ml_add(MList **ml, MEntry *me) {
-// if(me->full_address == NULL && me->house_number == NULL && me->postcode == NULL && me->surname == NULL){
-// 		return 1;
-// 	}
-	if (ml_verbose)
-		fprintf(stderr, "add entry to list\n");
-		
-	
-	MList *m = *ml;
-	unsigned long hashval;
-	Entry *current, *nextEntry;
-	int counterSize = 0;
-
-	//Look for existing
-	if (ml_lookup(m, me) != NULL) {
-		return 1;
-	}
-
-	//Allocate space
-	if ((nextEntry = (Entry *)malloc(sizeof(Entry))) == NULL) {
-		
-		return 0;
-	}
-	nextEntry->next = NULL;
-
-	
-	hashval = me_hash(me, m->size);
-
-
-	//Get correct linked list
-	current = m->table[hashval];
-
-
-	//Look for next empty and add in
-	while (current->next != NULL) {
-		current = current->next;
-		counterSize++;
-	}
-	current->next = nextEntry;
-	current->entry = me;
-
-	//Check size of list and recreate if required
-	if(counterSize > m->size){
-		*ml = reCreate(m);
-	}
-	return 1;
-	
-	
-}
-
-//Look for existing entry
-MEntry *ml_lookup(MList *ml, MEntry *me) {
-	// if(me->full_address == NULL && me->house_number == NULL && me->postcode == NULL && me->surname == NULL){
-	// 	return 1;
-	// }
-	unsigned long hashVal;
-	Entry *entryP;
-
-	int tempSize = ml->size;
-
-	
-	if (ml_verbose)
-		fprintf(stderr, "mlist: look for existence of entry\n");
-		
-
-
-	hashVal = me_hash(me, ml->size);
-
-
-
-	entryP = ml->table[hashVal];
-
-	while (entryP->next != NULL) {
-		if (me_compare(entryP->entry, me) == 0) {
-			//Entry found, return entry.
-			return entryP->entry;
-		}
-		else {
-			//Continue searching
-			entryP = entryP->next;
-		}
-	}
-	//Entry not found
-	ml->size = tempSize;
-	return NULL;
+    //allocate memory for all the entry in the table
+    for (i=0;i<mlist->size;i++){
+        if ((mlist->table[i] = malloc(sizeof(Entry))) != NULL)
+            mlist->table[i]->size = 0; 
+    }
+    return mlist;
 }
 
 
-void ml_destroy(MList *ml) {
-	int i;
-	//currNode is the current one to delete, nextNode is pointing to the next one to delete
-	Entry *currNode; 
-	Entry *nextNode;	
+/* ml_add - adds a new MEntry to the list;
+ * returns 1 if successful, 0 if error (malloc)
+ * returns 1 if it is a duplicate */
+int ml_add(MList **ml, MEntry *me){
 
-	if (ml_verbose)
-		fprintf(stderr, "mlist: destroying list\n");
+     //get hash value of me using size of list
+    unsigned long hashVal = me_hash(me,(*ml)->size);
 
-	/** loop through each hash entry, then loop through buckets, free'ing */
-	for (i = 0; i < size; i++) {
-		currNode = ml->table[i];
-		while (currNode->next != NULL) {
-			nextNode = currNode->next;
-			me_destroy(currNode->entry);
-			free(currNode);
-			currNode = nextNode;
-		}
-		free(currNode);
-		currNode = NULL;
-	}
-	
-	free(ml->table);
-	ml->table = NULL;
-	free(ml);
+
+    Entry *addList = (*ml) -> table[hashVal];
+
+    if(ml_verbose)
+        fprintf(stderr, "Adding to the mlist\n");
+
+   
+    if(ml_lookup((*ml),me) != NULL)
+        return 1;
+
+    if(Element == addList->size){ 
+
+	//resizing list
+    addList = ml_readd((*ml), me);
+    }
+
+    
+    addList->entryArray[addList->size] = me;
+    (addList->size)++;
+    return 1; 
+}
+
+
+/* ml_lookup - looks for MEntry in the list, returns matching entry or NULL */
+MEntry *ml_lookup(MList *ml, MEntry *me){
+    unsigned long hashVal = me_hash(me,ml->size);
+    MEntry *compare = NULL;
+    int i;
+    for(i = 0; i < ml->table[hashVal]->size; i++){
+        compare = ml->table[hashVal]->entryArray[i];
+        if(me_compare(compare,me)==0)
+            return compare;
+    }
+    return NULL;
+}
+
+/* ml_destroy - destroy the mailing list */
+void ml_destroy(MList *ml){
+    
+    int i = 0;
+    int j = 0;
+    unsigned int initialCap = ml->size;
+
+    if (ml_verbose)
+      fprintf(stderr, "ml_destroy...\n");
+
+    for(i=0;i<initialCap;i++){
+        for(j=0;j<ml->table[i]->size;j++)
+           
+		   //destroy and free the entry
+            me_destroy(ml->table[i]->entryArray[j]);
+
+        
+        free(ml->table[i]);
+    }
+    
+    free(ml->table);
+    free(ml);
 	ml = NULL;
 }
 
-//create new table with X2 of size
-void *reCreate(MList *ml){
-	 if(ml_verbose)
-	 	fprintf(stderr,"mlist: resizing hash table\n");
-		printf("Resize \n");
+Entry *ml_readd(MList *ml, MEntry *me){
 
-	// create a new mailing list with x2 size 
-	MList *new_ml;
-	size = (ml->size) * 2;
-	new_ml = ml_create();
-	transfer(ml, new_ml);
-	
-}
+     //get hash value of me using size of list
+    unsigned long hashVal = me_hash(me, ml->size);
 
-//Move all the current entries to the new hash table
-void *transfer(MList *ml, MList *new_ml){
- 
- 	int i;
-	int bCount;
-	unsigned long hashVal;
-	
-	Entry *current;
-	Entry *newC;
-	Entry *addC;
-	
-// Go through every single entry
-	for(i=0;i<ml->size;i++){
-		current = ml->table[i];
-		while(current->next!=NULL){
+    //new hashVariable
+    unsigned long newhashVal = 0 ;
 
-			/** stores location of next node to assign space to */
-			newC = current->next;
-			
-			/** set next value of cursor to NULL to indicate last node */
-			current->next = NULL;
 
-			hashVal = me_hash(current->entry,size);
-			//use new hash value index and store in updated list
-			addC = new_ml->table[hashVal];
+    Entry *addList = ml -> table[hashVal];
+    Entry **newList = NULL;
+   
 
-			/*Loop through new entry to store the newly hashed entries.
-			LLCount is to determine whether the new hashVal has entries or not,
-			initially 0 means it has no entries and add the count to 1.
-			2 means that it already has an entry and the rest of the entry that has same hash val will be added to the next position
-			in the list.
-			*/
-			bCount=0;
-			while(addC->next!=NULL){
-				addC = addC->next;
-			}
-			
-			if( (new_ml->table[hashVal]->LLCount == 0) ){
-				new_ml->table[hashVal] = current;
-				new_ml->table[hashVal]->LLCount = 1;
-			} 
-		
-			else if( (new_ml->table[hashVal]->LLCount == 1) ){
-				new_ml->table[hashVal]->next = current;
-				new_ml->table[hashVal]->LLCount = 2;
-			} else
-				addC->next = current;
+    //used when resizing to hold the value of the mentry
+    MEntry *tempEntry = NULL;
+      oldCap = ml->size;
+        ml->size = (ml->size)*2;
 
-			
-			current = newC;
-		}
-		
-	}
-	free(ml->table);
-	ml->table = NULL;
-	free(ml);
-	ml = NULL;
-	
+       
+        if((newList = calloc(ml->size,sizeof(Entry*))) == NULL)
+		return NULL;
+            
 
-	return new_ml;
+        newCap = ml->size;
+
+        //allocate memory for the lists and set their size to 0
+        for(i=0;i<oldCap;i++){
+            newList[i] = calloc(1,sizeof(Entry));
+            newList[i]->size = 0;
+        }
+
+        
+        for(i=0;i<newCap;i++){
+            for(j=0;j<ml->table[i]->size;j++){
+                tempEntry = ml->table[i]->entryArray[j];
+                newhashVal = me_hash(tempEntry,ml->size);
+
+                newList[newhashVal]->entryArray[newList[newhashVal]->size] = tempEntry;
+                (newList[newhashVal]->size)++;
+            }
+        }
+
+        //free all allocated memory for the old lists & hash table
+        for(i=0;i<newCap;i++)
+            free(ml->table[i]);
+        free(ml->table);
+
+        //point to the new list & get their hash
+        ml->table = newList;
+        hashVal = me_hash(me,ml->size);
+        addList = ml->table[hashVal];
+
+		return addList; 
 }
