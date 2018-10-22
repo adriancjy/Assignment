@@ -5,30 +5,31 @@
 #define Element 20
 #define TSize 20
 
-int ml_verbose=0;		
+int ml_verbose=0;		/* if true, print diagnostics on stderr */
 
-//create an array to hold 20 entries 
+//similar to linked list (without actually linking the entries)
+//size is the amount of entries currently in the list
+//me_array is an array of mailing entries
 typedef struct entry{
     unsigned int size;
     MEntry *entryArray[20];
 }Entry;
-
 
 typedef struct mlist{
     unsigned int size;
     Entry **table;
 }MListT;
 
-//Declare to remove implicit warning
-Entry *ml_readd(MList *ml, MEntry *me);
+Entry* ml_reAdd(MList **ml, MEntry *me);
 
-//Global variables reused
- 	unsigned int oldCap = 0;
+    unsigned int oldCap = 0;
     unsigned int newCap = 0;
 
-   // Variable for for loop to access entry and table
+    //stepper variables
     unsigned int i=0;
     unsigned int j=0;
+    unsigned long hashVal = 0;
+    unsigned long newHash = 0 ;
 
 /* ml_create - created a new mailing list */
 MList *ml_create(void){
@@ -64,29 +65,25 @@ MList *ml_create(void){
  * returns 1 if it is a duplicate */
 int ml_add(MList **ml, MEntry *me){
 
-     //get hash value of me using size of list
-    unsigned long hashVal = me_hash(me,(*ml)->size);
+   hashVal = me_hash(me,(*ml)->size);
 
-
-    Entry *addList = (*ml)->table[hashVal];
-
-    if(ml_verbose)
-        fprintf(stderr, "Adding to the mlist\n");
-
+    Entry *add_list = (*ml) -> table[hashVal];
    
+    if(ml_verbose)
+        fprintf(stderr, "adding to the mlist\n");
+
+    //Look up if entry exists already
     if(ml_lookup((*ml),me) != NULL)
         return 1;
 
-    //checks if addlist reaches size of 20, if so, increase table size
-    if(Element == addList->size){ 
+    if(Element == add_list->size){
 
-	//resizing list
-    addList = ml_readd((*ml), me);
+    add_list = ml_reAdd(ml,me);
     }
 
-    //addlist->size  is  0 initially, initialized in ml_create
-    addList->entryArray[addList->size] = me;
-    (addList->size)++;
+    
+    add_list->entryArray[add_list->size] = me;
+    (add_list->size)++;
     return 1; 
 }
 
@@ -103,6 +100,7 @@ MEntry *ml_lookup(MList *ml, MEntry *me){
     }
     return NULL;
 }
+
 
 /* ml_destroy - destroy the mailing list */
 void ml_destroy(MList *ml){
@@ -129,57 +127,55 @@ void ml_destroy(MList *ml){
 	ml = NULL;
 }
 
-Entry *ml_readd(MList *ml, MEntry *me){
+Entry* ml_reAdd(MList **ml, MEntry *me){
+    if (ml_verbose)
+      fprintf(stderr, "List resizing...\n");
+    printf("Resizing\n");
 
-     //get hash value of me using size of list
-    unsigned long hashVal = me_hash(me, ml->size);
+    hashVal = me_hash(me,(*ml)->size);
 
-    //new hashVariable
-    unsigned long newhashVal = 0 ;
-
-
-    Entry *addList = ml -> table[hashVal];
-    Entry **newList = NULL;
+    
+    Entry *addList = (*ml) -> table[hashVal];
+    Entry **resized = NULL;
    
 
     //used when resizing to hold the value of the mentry
     MEntry *tempEntry = NULL;
-      oldCap = ml->size;
-        ml->size = (ml->size)*2;
+
+     newCap = (*ml)->size;
+     //double the size of the list
+        (*ml)->size = ((*ml)->size)*2; 
 
        
-        if((newList = calloc(ml->size,sizeof(Entry*))) == NULL)
-		return NULL;
-            
+        if((resized = calloc((*ml)->size,sizeof(Entry*))) == NULL)
+            return NULL;
 
-        newCap = ml->size;
+        oldCap = (*ml)->size;//keep the old capacity
 
         //allocate memory for the lists and set their size to 0
         for(i=0;i<oldCap;i++){
-            newList[i] = calloc(1,sizeof(Entry));
-            newList[i]->size = 0;
+            resized[i] = calloc(1,sizeof(Entry));
+            resized[i]->size = 0;
         }
 
-        
+        //Loop through all entries and add accordingly
         for(i=0;i<newCap;i++){
-            for(j=0;j<ml->table[i]->size;j++){
-                tempEntry = ml->table[i]->entryArray[j];
-                newhashVal = me_hash(tempEntry,ml->size);
+            for(j=0;j<(*ml)->table[i]->size;j++){
+                tempEntry = (*ml)->table[i]->entryArray[j];
+                newHash = me_hash(tempEntry,(*ml)->size);
 
-                newList[newhashVal]->entryArray[newList[newhashVal]->size] = tempEntry;
-                (newList[newhashVal]->size)++;
+                resized[newHash]->entryArray[resized[newHash]->size] = tempEntry;
+                (resized[newHash]->size)++;
             }
         }
 
-        //free all allocated memory for the old lists & hash table
-        for(i=0;i<newCap;i++)
-            free(ml->table[i]);
-        free(ml->table);
+        for(i=0;i<newHash;i++)
+            free((*ml)->table[i]);
+        free((*ml)->table);
 
-        //point to the new list & get their hash
-        ml->table = newList;
-        hashVal = me_hash(me,ml->size);
-        addList = ml->table[hashVal];
-
-		return addList; 
+        //pointing the ml list to the new list, and then pointing the entry list to the ml list
+        (*ml)->table = resized;
+        hashVal = me_hash(me,(*ml)->size);
+        addList = (*ml)->table[hashVal];
+        return addList;
 }
