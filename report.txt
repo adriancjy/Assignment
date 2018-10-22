@@ -13,3 +13,5 @@ Surname validation is done by checking whether there is a , or there is not, the
 there is no comma.
 
 hash table is recreated with size * 2 and rehashed and added to new table.
+
+Memory leak not solved
