@@ -22,10 +22,11 @@ typedef struct mlist{
 //Declare to remove implicit warning
 Entry *ml_readd(MList *ml, MEntry *me);
 
+//Global variables reused
  	unsigned int oldCap = 0;
     unsigned int newCap = 0;
 
-   // Variable for for loop to access entries in table
+   // Variable for for loop to access entry and table
     unsigned int i=0;
     unsigned int j=0;
 
@@ -67,7 +68,7 @@ int ml_add(MList **ml, MEntry *me){
     unsigned long hashVal = me_hash(me,(*ml)->size);
 
 
-    Entry *addList = (*ml) -> table[hashVal];
+    Entry *addList = (*ml)->table[hashVal];
 
     if(ml_verbose)
         fprintf(stderr, "Adding to the mlist\n");
@@ -76,13 +77,14 @@ int ml_add(MList **ml, MEntry *me){
     if(ml_lookup((*ml),me) != NULL)
         return 1;
 
+    //checks if addlist reaches size of 20, if so, increase table size
     if(Element == addList->size){ 
 
 	//resizing list
     addList = ml_readd((*ml), me);
     }
 
-    
+    //addlist->size  is  0 initially, initialized in ml_create
     addList->entryArray[addList->size] = me;
     (addList->size)++;
     return 1; 
